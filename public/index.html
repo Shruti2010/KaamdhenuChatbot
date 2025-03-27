@@ -66,22 +66,16 @@
             // Scroll right after typing indicator is added
             chatLog.scrollTop = chatLog.scrollHeight;
 
-            fetch(`/get?msg=${encodeURIComponent(userMessage)}`)
-                .then(response => response.json())
-                .then(data => {
-                    // Remove typing indicator
-                    chatLog.removeChild(typingDiv);
+           fetch("your-endpoint-or-json-file.json")
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    return response.json();
+  })
+  .then(data => console.log(data))
+  .catch(error => console.error("Error:", error));
 
-                    // Add bot response with typewriter effect
-                    const botResponse = data.response;
-                    typeWriter(botResponse, () => {
-                        // Scroll ONLY after typewriter function finished.
-                        chatLog.scrollTop = chatLog.scrollHeight;
-                    });
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    chatLog.removeChild(typingDiv);
 
                     const errorDiv = document.createElement('div');
                     errorDiv.className = 'bot-message';
