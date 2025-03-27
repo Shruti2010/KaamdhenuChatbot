@@ -66,30 +66,39 @@
             // Scroll right after typing indicator is added
             chatLog.scrollTop = chatLog.scrollHeight;
 
-            fetch(`/get?msg=${encodeURIComponent(userMessage)}`)
-                .then(response => response.json())
-                .then(data => {
-                    // Remove typing indicator
-                    chatLog.removeChild(typingDiv);
-
-                    // Add bot response with typewriter effect
-                    const botResponse = data.response;
-                    typeWriter(botResponse, () => {
-                        // Scroll ONLY after typewriter function finished.
-                        chatLog.scrollTop = chatLog.scrollHeight;
-                    });
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    chatLog.removeChild(typingDiv);
-
-                    const errorDiv = document.createElement('div');
-                    errorDiv.className = 'bot-message';
-                    errorDiv.innerHTML = "<p>I'm sorry, there was an error processing your request.</p>";
-                    chatLog.appendChild(errorDiv);
-                    chatLog.scrollTop = chatLog.scrollHeight;
-                });
+        fetch(`/get?msg=${encodeURIComponent(userMessage)}`)
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
         }
+        return response.json();
+    })
+    .then(data => {
+        chatLog.removeChild(typingDiv);
+
+        if (!data.response) {
+            throw new Error('Invalid response format from server');
+        }
+
+        // Add bot response with typewriter effect
+        const botResponse = data.response;
+        typeWriter(botResponse, () => {
+            // Scroll ONLY after typewriter function finished.
+            chatLog.scrollTop = chatLog.scrollHeight;
+        });
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        chatLog.removeChild(typingDiv);
+
+        // Show a user-friendly error message in chat
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'bot-message';
+        errorDiv.innerHTML = "<p>Oops! There was a problem processing your request. Please try again later.</p>";
+        chatLog.appendChild(errorDiv);
+        chatLog.scrollTop = chatLog.scrollHeight;
+    });
+
 
         function typeWriter(text, callback) {
             const chatLog = document.getElementById('chat-log');
