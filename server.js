@@ -12,7 +12,7 @@ const app = express();
 const port = 3000;
 
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, 'public'))); // Serve static files
+app.use(express.static(path.join(__dirname, 'public')));
 
 const apiKey = process.env.GEMINI_API_KEY;
 const genAI = new GoogleGenerativeAI(apiKey);
@@ -35,7 +35,7 @@ const generationConfig = {
     topP: 0.95,
     topK: 40,
     maxOutputTokens: 8192,
-    responseMimeType: "text/plain",
+    responseMimeType: "application/json",
 };
 
 let chatSession;
@@ -66,12 +66,12 @@ app.get('/get', async (req, res) => {
     const userInput = req.query.msg;
 
     if (!userInput) {
-        return res.status(400).send({ error: 'Message is required' });
+        return res.status(400).json({ error: 'Message is required' });
     }
 
     try {
         const result = await chatSession.sendMessage(userInput);
-        const responseText = result.response.text();
+        const responseText = result.response.text(); // Correct way to extract response
         res.json({ response: responseText });
     } catch (error) {
         console.error('Error processing chat message:', error);
@@ -79,10 +79,11 @@ app.get('/get', async (req, res) => {
     }
 });
 
+
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 app.listen(port, () => {
-    console.log(`Server listening at http://localhost:${port}`);
+    console.log(Server listening at http://localhost:${port});
 });
