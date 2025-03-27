@@ -24,7 +24,10 @@
             <div class="input-container">
                 <input type="text" id="input" placeholder="Type a message..." autocomplete="off" autocorrect="off" />
                 <button class="send-button" onclick="sendMessage()">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="send-icon"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="send-icon">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
                 </button>
             </div>
         </div>
@@ -33,28 +36,15 @@
     <script>
         window.onload = function() {
             displayInitialMessage();
-            loadJSONData();
-        }
+        };
 
         function displayInitialMessage() {
             const chatLog = document.getElementById('chat-log');
             const botDiv = document.createElement('div');
             botDiv.className = 'bot-message';
-            botDiv.innerHTML = "<p>Hello, this is your chatbot assistant. I'm here to help you related to cow conservation, traditional cow breeds, and much more. How can I assist you today?</p>";
+            botDiv.innerHTML = "<p>Hello, this is your chatbot assistant. I'm here to help you with cow conservation, traditional cow breeds, and more. How can I assist you today?</p>";
             chatLog.appendChild(botDiv);
             chatLog.scrollTop = chatLog.scrollHeight;
-        }
-
-        function loadJSONData() {
-            fetch("data.json") // Change to the correct path of your JSON file
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(data => console.log("Data Loaded:", data))
-                .catch(error => console.error("Error fetching JSON:", error));
         }
 
         function sendMessage() {
@@ -63,28 +53,40 @@
 
             const chatLog = document.getElementById('chat-log');
 
+            // Add user message
             const userDiv = document.createElement('div');
             userDiv.className = 'user-message';
             userDiv.innerHTML = `<p>${userMessage}</p>`;
             chatLog.appendChild(userDiv);
+
             document.getElementById('input').value = '';
 
+            // Add typing indicator
             const typingDiv = document.createElement('div');
             typingDiv.className = 'bot-message typing';
             typingDiv.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
             chatLog.appendChild(typingDiv);
             chatLog.scrollTop = chatLog.scrollHeight;
 
-            fetch(`/get?msg=${encodeURIComponent(userMessage)}`)
-                .then(response => response.json())
+            // Fetch response from JSON file (Update the path if needed)
+            fetch("/chat-response.json")
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     chatLog.removeChild(typingDiv);
+                    if (!data.response) {
+                        throw new Error("Invalid JSON format: Missing 'response' key");
+                    }
                     typeWriter(data.response, () => {
                         chatLog.scrollTop = chatLog.scrollHeight;
                     });
                 })
                 .catch(error => {
-                    console.error('Error:', error);
+                    console.error('Error fetching JSON:', error);
                     chatLog.removeChild(typingDiv);
                     const errorDiv = document.createElement('div');
                     errorDiv.className = 'bot-message';
@@ -126,3 +128,4 @@
     </script>
 </body>
 </html>
+
